@@ -1,0 +1,82 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath("net.serenity-bdd:serenity-gradle-plugin:4.0.12")
+    }
+}
+
+plugins {
+    id 'java'
+    id 'idea'
+    id 'org.sonarqube' version '7.2.1.6560'
+}
+
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+ext {
+    slf4jVersion = '1.7.7'
+    serenityVersion = '4.0.12'
+    cucumberVersion = '7.14.0'
+    junitVersion = '4.13.2'
+    assertJVersion = '3.24.0'
+    logbackVersion = '1.18.30'
+}
+
+repositories {
+    maven {
+        credentials {
+            username 'compiler'
+            password 'mUg1w4r4!$'
+        }
+        url "https://artifactorybancoagricola.jfrog.io/artifactory/maven-bancoagricola"
+    }
+    mavenLocal()
+}
+
+dependencies {
+    implementation "net.serenity-bdd:serenity-screenplay:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-cucumber:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-core:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-screenplay-webdriver:${serenityVersion}"
+    implementation "net.serenity-bdd:serenity-ensure:${serenityVersion}"
+    implementation "org.assertj:assertj-core:${assertJVersion}"
+    implementation "junit:junit:${junitVersion}"
+    implementation "org.junit.platform:junit-platform-launcher:1.8.2"
+    implementation "org.junit.jupiter:junit-jupiter-engine:5.8.2"
+    implementation "org.junit.vintage:junit-vintage-engine:5.8.2"
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+    compileOnly "org.projectlombok:lombok:1.18.20"
+    annotationProcessor "org.projectlombok:lombok:1.18.20"
+
+    testImplementation "io.cucumber:datatable:${cucumberVersion}"
+    testImplementation "io.cucumber:cucumber-junit:${cucumberVersion}"
+
+
+
+    // Si estás usando Appium o pruebas móviles, descomentá la línea siguiente:
+    // implementation 'io.appium:java-client:8.5.1'
+}
+
+apply plugin: "net.serenity-bdd.serenity-gradle-plugin"
+
+test {
+    testLogging.showStandardStreams = false
+    systemProperties System.getProperties()
+}
+
+serenity {
+    reports = ["single-page-html"]
+}
+
+gradle.startParameter.continueOnFailure = true
+test.finalizedBy(aggregate)
+
+// Forzar codificación UTF-8 para compilación
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

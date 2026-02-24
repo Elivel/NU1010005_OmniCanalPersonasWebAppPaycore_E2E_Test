@@ -1,0 +1,20 @@
+trigger:
+  - master
+name: $(Build.SourceBranchName).$(date:yyyyMMdd)$(rev:.r)
+
+variables:
+- template: vars.yaml
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: Administración TI/NU1098116_TestingTemplatesTest_DevOps
+    ref: master 
+
+extends:
+  template: templates_E2E/E2E_Test.yaml@templates 
+  parameters:
+    gradleWrapperFile: 'OminicanalidadPersonasWeb/gradlew'
+    workingDirectory: 'OminicanalidadPersonasWeb/'
+    artifactName: 'NU1010005_OmniCanalPersonasWebAppPaycore_E2E_Test'

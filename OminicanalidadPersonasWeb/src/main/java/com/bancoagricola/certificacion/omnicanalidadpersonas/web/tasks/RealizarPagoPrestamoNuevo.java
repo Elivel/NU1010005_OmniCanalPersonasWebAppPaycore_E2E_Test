@@ -1,0 +1,88 @@
+package com.bancoagricola.certificacion.omnicanalidadpersonas.web.tasks;
+
+import com.bancoagricola.certificacion.omnicanalidadpersonas.web.interactions.ClickEn;
+import com.bancoagricola.certificacion.omnicanalidadpersonas.web.interactions.IngresoMenuCtaAhorroOrigenMovimientos;
+import com.bancoagricola.certificacion.omnicanalidadpersonas.web.interactions.IngresoVerMasCtaAhorro;
+import com.bancoagricola.certificacion.omnicanalidadpersonas.web.models.Transferencias;
+import com.bancoagricola.certificacion.omnicanalidadpersonas.web.utils.VariablesSesion;
+import net.serenitybdd.core.steps.Instrumented;
+import net.serenitybdd.screenplay.Actor;
+import net.serenitybdd.screenplay.Task;
+import net.serenitybdd.screenplay.actions.Click;
+import net.serenitybdd.screenplay.actions.Scroll;
+import net.serenitybdd.screenplay.actions.SendKeys;
+import net.serenitybdd.screenplay.waits.WaitUntil;
+import net.serenitybdd.annotations.Step;
+
+import java.util.List;
+
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.AhorrosPage.MENU_PRINC;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.Comprobante365.LABEL_COMPROBANTE;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.Comprobante365.REFERENCIA_365;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.CuentasPage.*;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.GeneralPage.*;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.utils.Constantes.*;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.utils.VariablesSesion.REFERENCIA_TICKET_VAR;
+import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.*;
+import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isVisible;
+
+public class RealizarPagoPrestamoNuevo implements Task {
+    private List<Transferencias> datostransferencias;
+
+    public RealizarPagoPrestamoNuevo(List<Transferencias> datostransferencias) {
+        this.datostransferencias = datostransferencias;
+    }
+
+    @Step("{0} 'realiza proceso de pago de préstamo'")
+    @Override
+    public <T extends Actor> void performAs(T actor) {
+        Transferencias t = datostransferencias.get(0);
+
+        actor.attemptsTo(
+                IngresoVerMasCtaAhorro.inicio(datostransferencias),
+                WaitUntil.the(OPCION_PAGO_PRESTAMO, isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(OPCION_PAGO_PRESTAMO, isClickable()).forNoMoreThan(60).seconds(),
+                Click.on(OPCION_PAGO_PRESTAMO),
+                WaitUntil.the(RESULTADOS.of("Pagar préstamo a terceros"), isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(RESULTADOS.of("Pagar préstamo a terceros"), isClickable()).forNoMoreThan(60).seconds(),
+                ClickEn.elElementoConTexto("Pagar préstamo a terceros"),
+                WaitUntil.the(LNK_CARGAR_PLANTILLA, isVisible()).forNoMoreThan(30).seconds(),
+                WaitUntil.the(LNK_CARGAR_PLANTILLA, isEnabled()).forNoMoreThan(30).seconds(),
+                SendKeys.of(t.getNumeroPrestamo()).into(TXT_NUMERO_CUENTA),
+                SendKeys.of(t.getCorreo()).into(TXT_CORREO),
+                SendKeys.of(t.getMonto()).into(TXT_MONTO_PAGO),
+                SendKeys.of(t.getConcepto()).into(TXT_CONCEPTO),
+                WaitUntil.the(BTN_CONTINUAR_PAGAR, isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(BTN_CONTINUAR_PAGAR, isClickable()).forNoMoreThan(60).seconds(),
+                Click.on(BTN_CONTINUAR_PAGAR),
+                WaitUntil.the(BTN_ACEPTAR_C, isVisible()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(BTN_ACEPTAR_C, isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(BTN_ACEPTAR_C, isClickable()).forNoMoreThan(60).seconds(),
+                Click.on(BTN_ACEPTAR_C),
+                WaitUntil.the(MENU_PRINC, isEnabled()).forNoMoreThan(60).seconds());
+        WaitUntil.the(RESULTADOS.of(PAGO_PRESTAMO_EXITOSO), isVisible()).forNoMoreThan(60).seconds().performAs(actor);
+
+        actor.remember(REFERENCIA_TICKET_VAR.toString(), REFERENCIA_TICKET.resolveFor(actor).getAttribute(TEXT_CONTENT).substring(12).trim());
+        System.out.println("Referencia: " + actor.recall(REFERENCIA_TICKET_VAR.toString()).toString());
+
+        /*Comprobante*/
+        actor.attemptsTo(
+                CapturaComprobantePrestamoTercero.datosC(datostransferencias),
+                Scroll.to(LABEL_COMPROBANTE.of(BOTON_IMPRIMIR)).andAlignToTop());
+        /* --------- */
+
+        actor.attemptsTo(
+                Scroll.to(BTN_FINALIZAR2).andAlignToTop(),
+                WaitUntil.the(BTN_FINALIZAR2, isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(BTN_FINALIZAR2, isClickable()).forNoMoreThan(60).seconds(),
+                Click.on(BTN_FINALIZAR2),
+                EsperaInicial.inicio(),
+                IngresoMenuCtaAhorroOrigenMovimientos.inicio(datostransferencias),
+                ValidaReferenciaTicketCuentaAhorro.conLaReferencia());
+        actor.remember(VariablesSesion.MONTO_CUENTA_ORIGEN_FINAL.toString(), OBTENER_SALDO.resolveFor(actor).getText());
+    }
+
+    public static RealizarPagoPrestamoNuevo tercero(List<Transferencias> datosTransferencias) {
+        return Instrumented.instanceOf(RealizarPagoPrestamoNuevo.class).withProperties(datosTransferencias);
+    }
+}

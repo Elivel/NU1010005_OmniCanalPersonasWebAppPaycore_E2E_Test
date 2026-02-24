@@ -1,0 +1,5 @@
+variables:
+  - name: AppName
+    value: ./OminicanalidadPersonasWeb/
+  - name: BuildTask
+    value: Gradle

@@ -1,0 +1,71 @@
+package com.bancoagricola.certificacion.omnicanalidadpersonas.web.tasks;
+
+import com.bancoagricola.certificacion.omnicanalidadpersonas.web.models.Transferencias;
+import com.bancoagricola.certificacion.omnicanalidadpersonas.web.utils.VariablesSesion;
+import net.serenitybdd.core.steps.Instrumented;
+import net.serenitybdd.screenplay.Actor;
+import net.serenitybdd.screenplay.Task;
+import net.serenitybdd.screenplay.actions.Click;
+import net.serenitybdd.screenplay.ensure.Ensure;
+import net.serenitybdd.screenplay.waits.WaitUntil;
+import net.serenitybdd.annotations.Step;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.AhorrosPage.MENU_PRINC;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.AhorrosPage.TABLA_MOVIMIENTOS_REFERENCIA_FON_RES;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.Comprobante365.*;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.CuentasPage.VER_MAS_CUENTA;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.userinterface.GeneralPage.OPCION_MENU;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.utils.Constantes.BOTON_OTROS;
+import static com.bancoagricola.certificacion.omnicanalidadpersonas.web.utils.Constantes.CUENTAS;
+import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isClickable;
+import static net.serenitybdd.screenplay.matchers.WebElementStateMatchers.isEnabled;
+
+public class FondosReservados implements Task {
+    private List<Transferencias> datosTransferencias;
+    private static List<String> listaObtenida = new ArrayList<>();
+    public FondosReservados(List<Transferencias> datosFR) {
+        this.datosTransferencias = datosFR;
+    }
+
+    @Step("{0} 'Ver Fondos Reservados'")
+    @Override
+    public <T extends Actor> void performAs(T actor) {
+        Transferencias t = datosTransferencias.get(0);
+        String concepto  = t.getConcepto();
+        actor.attemptsTo(
+                WaitUntil.the(MENU_PRINC, isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(OPCION_MENU.of(CUENTAS), isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(OPCION_MENU.of(CUENTAS), isClickable()).forNoMoreThan(60).seconds(),
+                Click.on(OPCION_MENU.of(CUENTAS)),
+                WaitUntil.the(VER_MAS_CUENTA.of(t.getCuentaOrigen()), isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(VER_MAS_CUENTA.of(t.getCuentaOrigen()), isClickable()).forNoMoreThan(60).seconds(),
+                Click.on(VER_MAS_CUENTA.of(t.getCuentaOrigen())),
+                //Scroll.to(LABEL_COMPROBANTE.of(BOTON_OTROS)),
+                WaitUntil.the(LABEL_COMPROBANTE.of(BOTON_OTROS), isEnabled()).forNoMoreThan(60).seconds(),
+                WaitUntil.the(LABEL_COMPROBANTE.of(BOTON_OTROS), isClickable()).forNoMoreThan(60).seconds(),
+                Click.on(LABEL_COMPROBANTE.of(BOTON_OTROS))
+        );
+           TABLA_MOVIMIENTOS_REFERENCIA_FON_RES.resolveAllFor(actor).forEach(
+                elementosLista -> {
+                    listaObtenida.clear();
+                });
+
+        TABLA_MOVIMIENTOS_REFERENCIA_FON_RES.resolveAllFor(actor).forEach(
+                elementosLista -> {
+                    listaObtenida.add(elementosLista.getText());
+                });
+
+        System.out.println("Referencia: " + actor.recall(VariablesSesion.REFERENCIA.toString()).toString());
+        System.out.println("Referencia2: " + actor.recall(VariablesSesion.REFERENCIA2.toString()).toString());
+        System.out.println("Listado: " + listaObtenida);
+        Task.where(actor+" valida que se muestre el número de referencia "+"'"+actor.recall(VariablesSesion.REFERENCIA.toString()).toString()+"'"+" en la tabla de fondos reservados",  Ensure.that(listaObtenida).contains(actor.recall(VariablesSesion.REFERENCIA.toString()).toString())).performAs(actor);
+        Task.where(actor+" valida que se muestre el número de referencia 2 "+"'"+actor.recall(VariablesSesion.REFERENCIA2.toString()).toString()+"'"+" en la tabla de fondos reservados",  Ensure.that(listaObtenida).contains(actor.recall(VariablesSesion.REFERENCIA2.toString()).toString())).performAs(actor);
+
+    }
+    public static FondosReservados datosFR(List<Transferencias> datosFR) {
+        return Instrumented.instanceOf(FondosReservados.class).withProperties(datosFR);
+    }
+}
