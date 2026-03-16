@@ -21,6 +21,7 @@ public class QueryResetExecutor {
 
             String sql = new BufferedReader(new InputStreamReader(inputStream))
                     .lines()
+                    .filter(line -> !line.trim().startsWith("--") && !line.trim().isEmpty())
                     .collect(Collectors.joining("\n"));
 
             String[] statements = sql.split(";");
