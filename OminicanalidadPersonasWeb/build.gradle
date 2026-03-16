@@ -15,16 +15,24 @@ plugins {
     id 'org.sonarqube' version '7.2.1.6560'
 }
 
-sourceCompatibility = '11'
-targetCompatibility = '11'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 ext {
-    slf4jVersion = '1.7.7'
-    serenityVersion = '4.0.12'
+    slf4jVersion = '2.0.12'
+    serenityVersion = '5.3.3'
     cucumberVersion = '7.14.0'
     junitVersion = '4.13.2'
-    assertJVersion = '3.24.0'
-    logbackVersion = '1.18.30'
+    junitLauncherVersion = '1.10.2'
+    junitJupiterVersion = '5.10.2'
+    assertJVersion = '3.25.3'
+    logbackVersion = '1.5.6'
+    poiVersion = '5.2.5'
+    lombokVersion = '1.18.32'
+    ojdbcVersion = '23.3.0.23.09'
 }
 
 repositories {
@@ -44,14 +52,19 @@ dependencies {
     implementation "net.serenity-bdd:serenity-core:${serenityVersion}"
     implementation "net.serenity-bdd:serenity-screenplay-webdriver:${serenityVersion}"
     implementation "net.serenity-bdd:serenity-ensure:${serenityVersion}"
+
     implementation "org.assertj:assertj-core:${assertJVersion}"
     implementation "junit:junit:${junitVersion}"
-    implementation "org.junit.platform:junit-platform-launcher:1.8.2"
-    implementation "org.junit.jupiter:junit-jupiter-engine:5.8.2"
-    implementation "org.junit.vintage:junit-vintage-engine:5.8.2"
-    implementation 'org.apache.poi:poi-ooxml:5.2.3'
-    compileOnly "org.projectlombok:lombok:1.18.20"
-    annotationProcessor "org.projectlombok:lombok:1.18.20"
+
+    implementation "org.junit.platform:junit-platform-launcher:${junitLauncherVersion}"
+    implementation "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
+    implementation "org.junit.vintage:junit-vintage-engine:${junitJupiterVersion}"
+
+    implementation "org.apache.poi:poi-ooxml:${poiVersion}"
+    implementation "com.oracle.database.jdbc:ojdbc11:${ojdbcVersion}"
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     testImplementation "io.cucumber:datatable:${cucumberVersion}"
     testImplementation "io.cucumber:cucumber-junit:${cucumberVersion}"
