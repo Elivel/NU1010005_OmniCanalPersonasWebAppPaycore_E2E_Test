@@ -36,6 +36,7 @@ public class OracleConnectionManager {
                 connection.close();
                 System.out.println("🔌 Conexión Oracle cerrada.");
             }
+            connection = null;
         } catch (SQLException e) {
             throw new RuntimeException("❌ Error al cerrar la conexión Oracle", e);
         }

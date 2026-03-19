@@ -4,7 +4,7 @@
 
 Característica: El cliente podrá realizar transferencias entre cuentas propias
 
-  @TransferenciaCuentasPropiasCAaCA @QA
+    @TransferenciaCuentasPropiasCAaCA @QA
   Escenario: El cliente podrá realizar transferencias entre sus propias cuentas de CA a CA
     Dado que el cliente ingresa a e-banca Personas
     Y inicia sesion como cliente auto01

@@ -26,26 +26,26 @@ public class QueryResetExecutor {
 
             String[] statements = sql.split(";");
 
+            OracleConnectionManager.connect();
             Connection conn = OracleConnectionManager.getConnection();
-            Statement stmt = conn.createStatement();
 
-            for (String query : statements) {
-                String trimmed = query.trim();
-                if (!trimmed.isEmpty()) {
-                    stmt.execute(trimmed);
-                    System.out.println("✔ Ejecutado: " + trimmed);
+            try (Statement stmt = conn.createStatement()) {
+                for (String query : statements) {
+                    String trimmed = query.trim();
+                    if (!trimmed.isEmpty()) {
+                        stmt.execute(trimmed);
+                        System.out.println("✔ Ejecutado: " + trimmed);
+                    }
                 }
             }
-
-            stmt.close();
 
         } catch (Exception e) {
             throw new RuntimeException("Error ejecutando reset de BD", e);
         } finally {
             try {
                 OracleConnectionManager.close();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
-
     }
 }

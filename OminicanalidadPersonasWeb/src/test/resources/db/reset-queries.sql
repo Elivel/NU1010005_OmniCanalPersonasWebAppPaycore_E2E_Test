@@ -22,3 +22,24 @@
 --Borrar Caché
 UPDATE omniqa.ATTEMPTS SET ATTEMPTS = 0;
 update omniqa.ENVIRONMENTS e set e.LAST_SYNCHRONIZATION = NULL;
+--Consulta de cuentas por usuario (donde usuario es el numero unico)
+
+SELECT  * FROM BACCYFILES.acmst WHERE acmcun = 9514;
+
+--Colocar las cuentas a activas por usuario
+
+update BACCYFILES.acmst set acmast = 'A', acmcon='' where acmcun in (16846);
+
+
+--Agregar saldo a las cuentas
+update baccyfiles.acmst set
+acmgbl = -500000, acmnbl = -500000, acmmgr = -500000,
+acmmgb = -500000, acmmne = -500000, acmmnb = -500000
+where acmacc in (1210039767);
+
+
+---
+
+SELECT * FROM omniqa.environment_product
+WHERE ID_ENVIRONMENT =(select eu.ID_ENVIRONMENt T from omniqa.ENVIRONMENT_USERS eu
+WHERE eu.ID_USER = (select u.id_user from omniqa.USERS u where u.USERNAME in ('auto01')  ) and ROWNUM <= 1) ;
